@@ -15,6 +15,7 @@ type Restaurant struct {
 		ReviewRating struct {
 			RatingValue float64 `json:"ratingValue"`
 		} `json:"reviewRating"`
+		URL string `json:"url"`
 	} `json:"review"`
 	PriceRange string `json:"priceRange"`
 	Geo        struct {

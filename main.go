@@ -1,18 +1,21 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
-
 func main() {
-	googleMapsAPIKey := os.Getenv("GOOGLE_MAPS_API_KEY")
-	if googleMapsAPIKey == "" {
-		fmt.Println("⚠️  Warning: GOOGLE_MAPS_API_KEY not set in environment variables.")
-	} else {
-		fmt.Println("✅ GOOGLE_MAPS_API_KEY loaded successfully.")
-	}
-
+	// googleResponse, err := google.GetPlaceFromMessy(
+	// 	"The Palomar Sydney is a genuinely exciting new addition to Oxford Street",
+	// 	"1 Oxford St,NSW,2021,AU",
+	// )
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// println("Google Places API Response:")
+	// for _, place := range googleResponse.Places {
+	// 	println("ID:", place.ID)
+	// 	println("Name:", place.DisplayName.Text)
+	// 	println("Address:", place.FormattedAddress)
+	// 	println("Rating:", place.Rating)
+	// 	println("Location: (", place.Location.Latitude, ",", place.Location.Longitude, ")\n")
+	// }
 	// restaurants, err := crawler.StartCrawling(
 	// 	"www.timeout.com",
 	// 	"https://www.timeout.com/sydney/food-drink",
