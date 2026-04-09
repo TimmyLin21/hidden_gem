@@ -17,7 +17,8 @@ CREATE TABLE restaurants (
     telephone TEXT,
     location GEOGRAPHY(POINT, 4326) NOT NULL,
     types TEXT[] NOT NULL,
-    restroom BOOLEAN NOT NULL
+    restroom BOOLEAN NOT NULL,
+    image_url TEXT
 );
 
 -- +goose Down

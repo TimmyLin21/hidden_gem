@@ -13,14 +13,14 @@ import (
 )
 
 const createRestaurant = `-- name: CreateRestaurant :one
-INSERT INTO restaurants (id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom)
+INSERT INTO restaurants (id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url)
 VALUES (
     gen_random_uuid(),
     NOW(),
     NOW(),
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 )
-RETURNING id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom
+RETURNING id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url
 `
 
 type CreateRestaurantParams struct {
@@ -35,6 +35,7 @@ type CreateRestaurantParams struct {
 	Location   interface{}
 	Types      []string
 	Restroom   bool
+	ImageUrl   sql.NullString
 }
 
 func (q *Queries) CreateRestaurant(ctx context.Context, arg CreateRestaurantParams) (Restaurant, error) {
@@ -50,6 +51,7 @@ func (q *Queries) CreateRestaurant(ctx context.Context, arg CreateRestaurantPara
 		arg.Location,
 		pq.Array(arg.Types),
 		arg.Restroom,
+		arg.ImageUrl,
 	)
 	var i Restaurant
 	err := row.Scan(
@@ -67,12 +69,40 @@ func (q *Queries) CreateRestaurant(ctx context.Context, arg CreateRestaurantPara
 		&i.Location,
 		pq.Array(&i.Types),
 		&i.Restroom,
+		&i.ImageUrl,
+	)
+	return i, err
+}
+
+const getRestaurantByID = `-- name: GetRestaurantByID :one
+SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants WHERE place_id = $1
+`
+
+func (q *Queries) GetRestaurantByID(ctx context.Context, placeID string) (Restaurant, error) {
+	row := q.db.QueryRowContext(ctx, getRestaurantByID, placeID)
+	var i Restaurant
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PlaceID,
+		&i.Name,
+		&i.SourceUrl,
+		&i.Rating,
+		&i.PriceLevel,
+		&i.Address,
+		&i.Website,
+		&i.Telephone,
+		&i.Location,
+		pq.Array(&i.Types),
+		&i.Restroom,
+		&i.ImageUrl,
 	)
 	return i, err
 }
 
 const getRestaurantBySourceURL = `-- name: GetRestaurantBySourceURL :one
-SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom FROM restaurants WHERE source_url = $1
+SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants WHERE source_url = $1
 `
 
 func (q *Queries) GetRestaurantBySourceURL(ctx context.Context, sourceUrl string) (Restaurant, error) {
@@ -93,6 +123,50 @@ func (q *Queries) GetRestaurantBySourceURL(ctx context.Context, sourceUrl string
 		&i.Location,
 		pq.Array(&i.Types),
 		&i.Restroom,
+		&i.ImageUrl,
 	)
 	return i, err
+}
+
+const getRestaurants = `-- name: GetRestaurants :many
+SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants
+`
+
+func (q *Queries) GetRestaurants(ctx context.Context) ([]Restaurant, error) {
+	rows, err := q.db.QueryContext(ctx, getRestaurants)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Restaurant
+	for rows.Next() {
+		var i Restaurant
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.PlaceID,
+			&i.Name,
+			&i.SourceUrl,
+			&i.Rating,
+			&i.PriceLevel,
+			&i.Address,
+			&i.Website,
+			&i.Telephone,
+			&i.Location,
+			pq.Array(&i.Types),
+			&i.Restroom,
+			&i.ImageUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

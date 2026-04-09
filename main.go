@@ -13,7 +13,6 @@ import (
 	"github.com/TimmyLin21/hidden_gem/internal/database"
 	"github.com/TimmyLin21/hidden_gem/internal/google"
 	"github.com/joho/godotenv"
-
 	_ "github.com/lib/pq"
 )
 
@@ -22,6 +21,8 @@ type config struct {
 }
 
 func main() {
+	// const port = "8080"
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error loading .env file: %s", err))
@@ -115,6 +116,10 @@ func main() {
 				Location: fmt.Sprintf("POINT(%f %f)", restaurantData.Location.Longitude, restaurantData.Location.Latitude),
 				Types:    restaurantData.Types,
 				Restroom: restaurantData.Restroom,
+				ImageUrl: sql.NullString{
+					String: restaurant.Image,
+					Valid:  restaurant.Image != "",
+				},
 			},
 		)
 		if err != nil {
@@ -122,6 +127,18 @@ func main() {
 		}
 		fmt.Printf("✅ Created restaurant in database: %s\n", restaurantDB.Name)
 	}
+
+	// mux := http.NewServeMux()
+
+	// api.RegisterRoutes(mux)
+
+	// server := &http.Server{
+	// 	Addr:    ":" + port,
+	// 	Handler: mux,
+	// }
+
+	// log.Printf("🚀 Starting server on port %s...\n", port)
+	// log.Fatal(server.ListenAndServe())
 
 	// restaurants, err := crawler.StartCrawling(
 	// 	"www.timeout.com",

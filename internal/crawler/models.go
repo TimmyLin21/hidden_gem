@@ -3,6 +3,7 @@ package crawler
 type Restaurant struct {
 	Type    string `json:"@type"`
 	Name    string `json:"name"`
+	Image   string `json:"image"`
 	Address struct {
 		StreetAddress   string `json:"streetAddress"`
 		AddressLocality string `json:"addressLocality"`

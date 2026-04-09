@@ -26,4 +26,5 @@ type Restaurant struct {
 	Location   interface{}
 	Types      []string
 	Restroom   bool
+	ImageUrl   sql.NullString
 }
