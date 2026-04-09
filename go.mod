@@ -1,4 +1,4 @@
-module github.com/TimmyLin21/hidden_gen
+module github.com/TimmyLin21/hidden_gem
 
 go 1.26.1
 
@@ -12,6 +12,7 @@ require (
 	github.com/gocolly/colly v1.2.0 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jawher/mow.cli v1.2.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect

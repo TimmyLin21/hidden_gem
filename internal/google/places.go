@@ -6,23 +6,38 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-
-	"github.com/joho/godotenv"
+	"strings"
 )
 
-func GetPlaceFromMessy(messyName, address string) (PlacesResponse, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return PlacesResponse{}, fmt.Errorf("Error loading .env file: %s", err)
-	}
-	apiKey := os.Getenv("GOOGLE_MAPS_API_KEY")
-	const URL = "https://places.googleapis.com/v1/places:searchText"
-	if apiKey == "" {
-		return PlacesResponse{}, fmt.Errorf("⚠️  Warning: GOOGLE_MAPS_API_KEY not set in environment variables.")
+func NewClient(apiKey string) *Client {
+	return &Client{apiKey: apiKey}
+}
+
+func (p *PriceLevel) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return fmt.Errorf("Error unmarshaling price level: %s", err)
 	}
 
-	fmt.Println("✅ GOOGLE_MAPS_API_KEY loaded successfully.")
+	switch strings.ToUpper(s) {
+	case "PRICE_LEVEL_FREE":
+		*p = PRICE_LEVEL_FREE
+	case "PRICE_LEVEL_INEXPENSIVE":
+		*p = PRICE_LEVEL_INEXPENSIVE
+	case "PRICE_LEVEL_MODERATE":
+		*p = PRICE_LEVEL_MODERATE
+	case "PRICE_LEVEL_EXPENSIVE":
+		*p = PRICE_LEVEL_EXPENSIVE
+	case "PRICE_LEVEL_VERY_EXPENSIVE":
+		*p = PRICE_LEVEL_VERY_EXPENSIVE
+	default:
+		*p = PRICE_LEVEL_UNSPECIFIED
+	}
+	return nil
+}
+
+func (c *Client) GetPlaceFromMessy(messyName, address string) (PlacesResponse, error) {
+	const URL = "https://places.googleapis.com/v1/places:searchText"
 
 	payload := map[string]string{
 		"textQuery": fmt.Sprintf("%s, %s", messyName, address),
@@ -37,8 +52,8 @@ func GetPlaceFromMessy(messyName, address string) (PlacesResponse, error) {
 		return PlacesResponse{}, fmt.Errorf("Error creating request: %s", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Goog-Api-Key", apiKey)
-	req.Header.Set("X-Goog-FieldMask", "places.id,places.displayName,places.formattedAddress,places.rating,places.location")
+	req.Header.Set("X-Goog-Api-Key", c.apiKey)
+	req.Header.Set("X-Goog-FieldMask", "places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.location,places.websiteUri,places.nationalPhoneNumber,places.types,places.restroom")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
