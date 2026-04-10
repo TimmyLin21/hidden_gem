@@ -12,7 +12,13 @@ RETURNING *;
 SELECT * FROM restaurants WHERE source_url = $1;
 
 -- name: GetRestaurants :many
-SELECT * FROM restaurants;
+SELECT * FROM restaurants
+WHERE
+    (rating >= sqlc.narg('rating') OR sqlc.narg('rating') IS NULL) AND
+    (price_level = ANY(sqlc.narg('price_levels')::int[]) OR sqlc.narg('price_levels') IS NULL) AND
+    (types && sqlc.narg('types')::text[] OR sqlc.narg('types') IS NULL) AND
+    (restroom = sqlc.narg('restroom') OR sqlc.narg('restroom') IS NULL)
+;
 
 -- name: GetRestaurantByID :one
 SELECT * FROM restaurants WHERE place_id = $1;

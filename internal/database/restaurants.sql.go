@@ -130,10 +130,27 @@ func (q *Queries) GetRestaurantBySourceURL(ctx context.Context, sourceUrl string
 
 const getRestaurants = `-- name: GetRestaurants :many
 SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants
+WHERE
+    (rating >= $1 OR $1 IS NULL) AND
+    (price_level = ANY($2::int[]) OR $2 IS NULL) AND
+    (types && $3::text[] OR $3 IS NULL) AND
+    (restroom = $4 OR $4 IS NULL)
 `
 
-func (q *Queries) GetRestaurants(ctx context.Context) ([]Restaurant, error) {
-	rows, err := q.db.QueryContext(ctx, getRestaurants)
+type GetRestaurantsParams struct {
+	Rating      sql.NullFloat64
+	PriceLevels []int32
+	Types       []string
+	Restroom    sql.NullBool
+}
+
+func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) ([]Restaurant, error) {
+	rows, err := q.db.QueryContext(ctx, getRestaurants,
+		arg.Rating,
+		pq.Array(arg.PriceLevels),
+		pq.Array(arg.Types),
+		arg.Restroom,
+	)
 	if err != nil {
 		return nil, err
 	}
