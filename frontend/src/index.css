@@ -1,1 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Waiting+for+the+Sunrise&display=swap");
+
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+#root {
+    @apply flex flex-col min-h-screen;
+}
+
+@layer base {
+    html {
+        font-family: "Source Sans 3", system-ui, sans-serif;
+    }
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+    /* Shadcn */
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@theme {
+    /* --- Font Families --- */
+    --font-sourcesan: "Source Sans 3", sans-serif;
+    --font-handwriting: "Waiting for the Sunrise", cursive;
+
+    /* --- Custom Colors --- */
+    /* Primary */
+    --color-primary-50: hsl(48, 100%, 96.1%);
+    --color-primary-100: hsl(48, 100%, 88.8%);
+    --color-primary-200: hsl(48, 100%, 76.7%);
+    --color-primary-300: hsl(46, 100%, 64.5%);
+    --color-primary-400: hsl(43, 100%, 55.9%);
+    --color-primary-500: hsl(38, 95.3%, 50.2%);
+    --color-primary-600: hsl(32, 98.2%, 43.7%);
+    --color-primary-700: hsl(26, 93.7%, 37.1%);
+    --color-primary-800: hsl(22, 85%, 31.4%);
+    --color-primary-900: hsl(21, 80.7%, 26.5%);
+    --color-primary-950: hsl(21, 94.4%, 14.1%);
+
+    /* Info */
+    --color-info-50: hsl(220, 60%, 97.1%);
+    --color-info-100: hsl(213, 56.2%, 93.7%);
+    --color-info-200: hsl(212, 57.7%, 86.1%);
+    --color-info-300: hsl(211, 59.4%, 73.9%);
+    --color-info-400: hsl(209, 57.3%, 59.6%);
+    --color-info-500: hsl(210, 54.7%, 48.4%);
+    --color-info-600: hsl(211, 60.2%, 39.4%);
+    --color-info-700: hsl(212, 59.8%, 32.2%);
+    --color-info-800: hsl(212, 55.7%, 27.5%);
+    --color-info-900: hsl(213, 49.2%, 23.9%);
+    --color-info-950: hsl(215, 50.6%, 15.9%);
+
+    /* Success */
+    --color-success-50: hsl(125, 64.7%, 96.7%);
+    --color-success-100: hsl(133, 73.7%, 92.5%);
+    --color-success-200: hsl(133, 68.4%, 85.1%);
+    --color-success-300: hsl(133, 66.4%, 73.1%);
+    --color-success-400: hsl(134, 59.8%, 58%);
+    --color-success-500: hsl(134, 61.4%, 44.7%);
+    --color-success-600: hsl(134, 66.5%, 36.3%);
+    --color-success-700: hsl(134, 62.4%, 29.2%);
+    --color-success-800: hsl(134, 56.1%, 24.1%);
+    --color-success-900: hsl(135, 53.4%, 20.2%);
+    --color-success-950: hsl(135, 68.6%, 10%);
+
+    /* Warning */
+    --color-warning-50: hsl(55, 100%, 95.3%);
+    --color-warning-100: hsl(56, 100%, 87.8%);
+    --color-warning-200: hsl(54, 100%, 76.3%);
+    --color-warning-300: hsl(51, 100%, 62.7%);
+    --color-warning-400: hsl(48, 100%, 52.5%);
+    --color-warning-500: hsl(45, 100%, 46.3%);
+    --color-warning-600: hsl(40, 100%, 41%);
+    --color-warning-700: hsl(35, 97.6%, 32.9%);
+    --color-warning-800: hsl(31, 86.4%, 28.8%);
+    --color-warning-900: hsl(28, 77.1%, 25.7%);
+    --color-warning-950: hsl(26, 88.9%, 14.1%);
+
+    /* Danger */
+    --color-danger-50: hsl(5, 85.7%, 97.3%);
+    --color-danger-100: hsl(0, 92.6%, 94.7%);
+    --color-danger-200: hsl(357, 88.2%, 90%);
+    --color-danger-300: hsl(356, 89.2%, 81.8%);
+    --color-danger-400: hsl(356, 87.7%, 71.4%);
+    --color-danger-500: hsl(354, 82.3%, 60.2%);
+    --color-danger-600: hsl(352, 70.9%, 49.8%);
+    --color-danger-700: hsl(350, 76%, 40.8%);
+    --color-danger-800: hsl(348, 74%, 34.7%);
+    --color-danger-900: hsl(346, 69%, 30.4%);
+    --color-danger-950: hsl(348, 80.2%, 15.9%);
+
+    /* Slate Override */
+    --color-slate-50: hsl(220, 20%, 97.1%);
+    --color-slate-100: hsl(220, 18.7%, 93.7%);
+    --color-slate-200: hsl(222, 18.3%, 86.1%);
+    --color-slate-300: hsl(214, 17.3%, 73.9%);
+    --color-slate-400: hsl(215, 17.5%, 59.6%);
+    --color-slate-500: hsl(215, 16.3%, 46.9%);
+    --color-slate-600: hsl(217, 18.4%, 39.4%);
+    --color-slate-700: hsl(218, 18.3%, 32.2%);
+    --color-slate-800: hsl(220, 17.1%, 27.5%);
+    --color-slate-900: hsl(220, 14.8%, 23.9%);
+    --color-slate-950: hsl(218, 13.6%, 15.9%);
+}
+
+/* Shadcn */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+ 
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: hsl(38, 95.3%, 50.2%);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.145 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+ 
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
