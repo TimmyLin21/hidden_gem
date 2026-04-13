@@ -10,6 +10,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import StarRating from '@/components/ui/StarRating'
 import { Badge } from '@/components/ui/Badge'
 import { FiltersSidebar } from '@/components/ui/FiltersSidebar'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 export const Route = createFileRoute('/')({
     validateSearch: (search: Record<string, unknown>): RestaurantSearch => {
@@ -108,7 +109,7 @@ function Home() {
     const [pressed, setPressed] = React.useState<FilterState>(getInitialFilterState(restaurantTypes, types, price_level, rating, restroom));
     const { isPending, error, data, isFetching } = useQuery({
         // Refetch data whenever any of the search parameters change
-        queryKey: ["restaurants", , { query, types, price_level, rating, restroom }],
+        queryKey: ["restaurants", { query, types, price_level, rating, restroom }],
         queryFn: () => fetchRestaurants(
             rating != undefined ? rating : undefined,
             price_level != undefined ? price_level : undefined,
@@ -178,7 +179,7 @@ function Home() {
                     handleApply={handleApply}
                     handlePressedChange={handlePressedChange} />
             </section>
-            <section>
+            <section className="flex-1 min-w-0">
                 <div className="flex justify-between w-full">
                     <FiltersDrawer
                         FILTERS={FILTERS}
@@ -196,7 +197,23 @@ function Home() {
                 </div>
                 <ul className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-4">
                     {isPending || isFetching ? (
-                        <p>Loading...</p>
+                        Array.from({ length: 6 }).map((_, index) => (
+                            <li key={index} className="h-full">
+                                <Card className="mx-auto h-full pt-0">
+                                    <Skeleton className="w-full aspect-video object-cover" />
+                                    <CardHeader>
+                                        <CardTitle>
+                                            <Skeleton className="h-6 w-3/4 mb-2" />
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className='flex flex-col gap-2'>
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-5/6" />
+                                        <Skeleton className="h-4 w-2/3" />
+                                    </CardContent>
+                                </Card>
+                            </li>
+                        ))
                     ) : error ? (
                         <p>Error: {(error as Error).message}</p>
                     ) : data && data.length > 0 ? (
