@@ -14,6 +14,11 @@ import (
 func (cfg *Config) HandlerRestaurantsGet(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
+	var namePtr *string
+	if name := q.Get("query"); name != "" {
+		namePtr = &name
+	}
+
 	var ratingPtr *float64
 	if ratingStr := q.Get("rating"); ratingStr != "" {
 		ratingVal, err := strconv.ParseFloat(ratingStr, 64)
@@ -48,6 +53,7 @@ func (cfg *Config) HandlerRestaurantsGet(w http.ResponseWriter, r *http.Request)
 	}
 
 	restaurants, err := cfg.DB.GetRestaurants(r.Context(), database.GetRestaurantsParams{
+		Name:        utils.ToNullString(namePtr),
 		Rating:      utils.ToNullFloat64(ratingPtr),
 		PriceLevels: priceLevels,
 		Types:       types,
@@ -74,4 +80,13 @@ func (cfg *Config) HandlerRestaurantsGetByID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	respondWithJSON(w, http.StatusOK, restaurant)
+}
+
+func (cfg *Config) HandlerRestaurantsGetTypes(w http.ResponseWriter, r *http.Request) {
+	types, err := cfg.DB.GetRestaurantsTypes(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve restaurant types", err)
+		return
+	}
+	respondWithJSON(w, http.StatusOK, types)
 }

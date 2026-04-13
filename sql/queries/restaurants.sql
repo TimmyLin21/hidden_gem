@@ -14,6 +14,7 @@ SELECT * FROM restaurants WHERE source_url = $1;
 -- name: GetRestaurants :many
 SELECT * FROM restaurants
 WHERE
+    (name ILIKE '%' || sqlc.narg('name')::text || '%' OR sqlc.narg('name') IS NULL) AND
     (rating >= sqlc.narg('rating') OR sqlc.narg('rating') IS NULL) AND
     (price_level = ANY(sqlc.narg('price_levels')::int[]) OR sqlc.narg('price_levels') IS NULL) AND
     (types && sqlc.narg('types')::text[] OR sqlc.narg('types') IS NULL) AND
@@ -22,3 +23,6 @@ WHERE
 
 -- name: GetRestaurantByID :one
 SELECT * FROM restaurants WHERE place_id = $1;
+
+-- name: GetRestaurantsTypes :many
+SELECT DISTINCT unnest(types) AS type FROM restaurants;

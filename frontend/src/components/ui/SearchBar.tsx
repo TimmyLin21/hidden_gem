@@ -1,18 +1,21 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { Button } from "./Button";
+import React from "react";
 
 export const SearchBar = () => {
     const navigate = useNavigate();
+    const search = useSearch({
+        strict: false,
+    })
+    const [searchTerm, setSearchTerm] = React.useState(search.query || "");
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const search = formData.get("search") as string;
         navigate({
             to: "/",
-            params: {
-                query: search
+            search: {
+                query: searchTerm
             }
         });
     };
@@ -33,8 +36,10 @@ export const SearchBar = () => {
                 type="text"
                 id="search"
                 name="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="block w-full h-12 md:h-14 pl-12 md:pl-14 rounded-[28px] bg-slate-50 placeholder:text-slate-500 font-medium"
-                placeholder="Cuisine, Restaurant ..."
+                placeholder="Restaurant Name"
             />
             <Button
                 type="submit"

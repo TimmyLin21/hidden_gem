@@ -131,13 +131,15 @@ func (q *Queries) GetRestaurantBySourceURL(ctx context.Context, sourceUrl string
 const getRestaurants = `-- name: GetRestaurants :many
 SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants
 WHERE
-    (rating >= $1 OR $1 IS NULL) AND
-    (price_level = ANY($2::int[]) OR $2 IS NULL) AND
-    (types && $3::text[] OR $3 IS NULL) AND
-    (restroom = $4 OR $4 IS NULL)
+    (name ILIKE '%' || $1::text || '%' OR $1 IS NULL) AND
+    (rating >= $2 OR $2 IS NULL) AND
+    (price_level = ANY($3::int[]) OR $3 IS NULL) AND
+    (types && $4::text[] OR $4 IS NULL) AND
+    (restroom = $5 OR $5 IS NULL)
 `
 
 type GetRestaurantsParams struct {
+	Name        sql.NullString
 	Rating      sql.NullFloat64
 	PriceLevels []int32
 	Types       []string
@@ -146,6 +148,7 @@ type GetRestaurantsParams struct {
 
 func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) ([]Restaurant, error) {
 	rows, err := q.db.QueryContext(ctx, getRestaurants,
+		arg.Name,
 		arg.Rating,
 		pq.Array(arg.PriceLevels),
 		pq.Array(arg.Types),
@@ -178,6 +181,33 @@ func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) 
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRestaurantsTypes = `-- name: GetRestaurantsTypes :many
+SELECT DISTINCT unnest(types) AS type FROM restaurants
+`
+
+func (q *Queries) GetRestaurantsTypes(ctx context.Context) ([]interface{}, error) {
+	rows, err := q.db.QueryContext(ctx, getRestaurantsTypes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []interface{}
+	for rows.Next() {
+		var type_ interface{}
+		if err := rows.Scan(&type_); err != nil {
+			return nil, err
+		}
+		items = append(items, type_)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

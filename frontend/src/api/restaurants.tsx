@@ -24,7 +24,7 @@ export type Restaurant = {
     };
 }
 
-export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean) => {
+export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean, query?: string): Promise<Restaurant[]> => {
     const querys = [];
     if (rating !== undefined) {
         querys.push(`rating=${rating}`);
@@ -38,7 +38,15 @@ export const fetchRestaurants = async (rating?: number, price_level?: number, ty
     if (restroom !== undefined) {
         querys.push(`restroom=${restroom}`);
     }
+    if (query !== undefined) {
+        querys.push(`query=${encodeURIComponent(query)}`);
+    }
     const queryString = querys.length > 0 ? `?${querys.join("&")}` : "";
     const response = await fetch(`/api/restaurants${queryString}`);
+    return await response.json();
+}
+
+export const fetchRestaurantTypes = async (): Promise<string[]> => {
+    const response = await fetch(`/api/restaurants/types`);
     return await response.json();
 }

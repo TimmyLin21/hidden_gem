@@ -12,54 +12,31 @@ import {
 import { X } from "lucide-react"
 import { Toggle } from "./Toggle"
 import React from "react"
-import { FILTERS, type FilterState } from "@/routes"
+import { type FilterState } from "@/routes"
 
 
 export function Filters({
+    FILTERS,
+    handlePressedChange,
+    handleReset,
+    handleApply,
     pressed,
-    setPressed,
     children }:
     {
+        FILTERS: Array<{
+            label: string;
+            options: Array<{
+                label: string;
+                value: string | number | boolean;
+            }>;
+        }>;
+        handlePressedChange: (filter: string, option: string) => void;
+        handleReset: () => void;
+        handleApply: () => void;
         pressed: FilterState;
-        setPressed: React.Dispatch<React.SetStateAction<FilterState>>; children: React.ReactNode
+        children: React.ReactNode
     }) {
-    const handlePressedChange = (category: string, value: string) => {
-        setPressed((prev) => {
-            switch (category) {
-                case "cuisine":
-                    return {
-                        ...prev,
-                        cuisine: {
-                            ...prev.cuisine,
-                            [value]: !prev.cuisine[value as keyof typeof prev.cuisine],
-                        }
-                    }
-                case "price":
-                case "rating":
-                case "restroom":
-                    return {
-                        ...prev,
-                        [category]: prev[category] === value ? null : value
-                    }
-                default:
-                    return prev
 
-            }
-        })
-
-    }
-    const handleReset = () => {
-        setPressed({
-            cuisine: {
-                Italian: false,
-                Chinese: false,
-                Mexican: false,
-            },
-            price: null,
-            rating: null,
-            restroom: null,
-        })
-    }
 
     return (
         <Drawer
@@ -90,23 +67,28 @@ export function Filters({
                                 </h3>
                                 <div className="flex gap-2">
                                     {
-                                        filter.options.map((option) => (
-                                            <Toggle
-                                                key={option.value}
-                                                aria-label={`Toggle ${option.label}`}
-                                                variant="outline"
-                                                rounded="full"
-                                                className="mb-2"
-                                                pressed={
-                                                    filter.label === "Cuisine"
-                                                        ? pressed.cuisine[option.label as keyof typeof pressed.cuisine]
-                                                        : pressed[filter.label.toLowerCase() as keyof Omit<FilterState, "cuisine">] === option.label
-                                                }
-                                                onPressedChange={() => handlePressedChange(filter.label.toLowerCase(), option.label)}
-                                            >
-                                                {option.label}
-                                            </Toggle>
-                                        ))
+                                        filter.options.map((option) => {
+                                            const categoryKey = filter.label.toLowerCase() as keyof FilterState;
+                                            const stringValue = String(option.value);
+
+                                            return (
+                                                <Toggle
+                                                    key={option.label}
+                                                    aria-label={`Toggle ${option.label}`}
+                                                    variant="outline"
+                                                    rounded="full"
+                                                    className="mb-2"
+                                                    pressed={
+                                                        filter.label === "Cuisine"
+                                                            ? !!pressed.cuisine[stringValue]
+                                                            : pressed[categoryKey as keyof Omit<FilterState, "cuisine">] === stringValue
+                                                    }
+                                                    onPressedChange={() => handlePressedChange(filter.label.toLowerCase(), stringValue)}
+                                                >
+                                                    {option.label}
+                                                </Toggle>
+                                            )
+                                        })
                                     }
                                 </div>
                             </div>
@@ -117,7 +99,7 @@ export function Filters({
                     <Button variant="link" rounded="full" onClick={handleReset}>
                         Reset
                     </Button>
-                    <Button variant="secondary" rounded="full">
+                    <Button variant="secondary" rounded="full" onClick={handleApply}>
                         Apply
                     </Button>
                 </DrawerFooter>
