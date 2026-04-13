@@ -15,7 +15,7 @@ import React from "react"
 import { type FilterState } from "@/routes"
 
 
-export function Filters({
+export function FiltersDrawer({
     FILTERS,
     handlePressedChange,
     handleReset,
@@ -99,9 +99,11 @@ export function Filters({
                     <Button variant="link" rounded="full" onClick={handleReset}>
                         Reset
                     </Button>
-                    <Button variant="secondary" rounded="full" onClick={handleApply}>
-                        Apply
-                    </Button>
+                    <DrawerClose asChild>
+                        <Button variant="secondary" rounded="full" onClick={handleApply}>
+                            Apply
+                        </Button>
+                    </DrawerClose>
                 </DrawerFooter>
             </DrawerContent>
         </Drawer>

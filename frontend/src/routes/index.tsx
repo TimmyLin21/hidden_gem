@@ -1,6 +1,6 @@
 import { fetchRestaurants, fetchRestaurantTypes } from '@/api/restaurants'
 import { Button } from '@/components/ui/Button'
-import { Filters } from '@/components/ui/Filters'
+import { FiltersDrawer } from '@/components/ui/FiltersDrawer'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { CircleDollarSign, Earth, Filter, Map, MapPin, Phone, Toilet, Utensils } from 'lucide-react'
@@ -9,6 +9,7 @@ import type { Restaurant } from '@/api/restaurants'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import StarRating from '@/components/ui/StarRating'
 import { Badge } from '@/components/ui/Badge'
+import { FiltersSidebar } from '@/components/ui/FiltersSidebar'
 
 export const Route = createFileRoute('/')({
     validateSearch: (search: Record<string, unknown>): RestaurantSearch => {
@@ -38,16 +39,22 @@ export interface FilterState {
     restroom: string | null;
 }
 
-function getInitialFilterState(restaurantTypes: string[] | undefined, types: string[] | undefined): FilterState {
+function getInitialFilterState(
+    restaurantTypes: string[] | undefined,
+    types: string[] | undefined,
+    price_level: number | undefined,
+    rating: number | undefined,
+    restroom: boolean | undefined
+): FilterState {
     const cusineState: Record<string, boolean> = {};
     purifyRestaurantTypes(restaurantTypes || []).forEach((type) => {
         cusineState[type] = (types || []).includes(type);
     })
     const initialState = {
         cuisine: cusineState,
-        price: null,
-        rating: null,
-        restroom: null,
+        price: price_level !== undefined ? price_level.toString() : null,
+        rating: rating !== undefined ? rating.toString() : null,
+        restroom: restroom !== undefined ? restroom.toString() : null,
     }
 
 
@@ -98,7 +105,7 @@ function Home() {
             }
         ];
     }, [restaurantTypes]);
-    const [pressed, setPressed] = React.useState<FilterState>(getInitialFilterState(restaurantTypes, types));
+    const [pressed, setPressed] = React.useState<FilterState>(getInitialFilterState(restaurantTypes, types, price_level, rating, restroom));
     const { isPending, error, data, isFetching } = useQuery({
         // Refetch data whenever any of the search parameters change
         queryKey: ["restaurants", , { query, types, price_level, rating, restroom }],
@@ -135,7 +142,7 @@ function Home() {
 
     }
     const handleReset = () => {
-        setPressed(getInitialFilterState(restaurantTypes, types));
+        setPressed(getInitialFilterState(restaurantTypes, types, price_level, rating, restroom));
     }
     const handleApply = () => {
         const activeTypes = Object.entries(pressed.cuisine)
@@ -157,125 +164,135 @@ function Home() {
     // Sync pressed state with URL search params on initial load and when restaurantTypes are fetched
     React.useEffect(() => {
         if (restaurantTypes) {
-            setPressed(getInitialFilterState(restaurantTypes, types));
+            setPressed(getInitialFilterState(restaurantTypes, types, price_level, rating, restroom));
         }
     }, [restaurantTypes, types, price_level, rating, restroom]);
 
     return (
-        <main className="container flex flex-col w-full gap-x-6 mb-12 mx-auto">
-            <div className="flex justify-between w-full">
-                <Filters
+        <main className="container flex w-full gap-x-6 md:gap-x-12 mb-12 mx-auto">
+            <section className="hidden md:block">
+                <FiltersSidebar
                     FILTERS={FILTERS}
                     pressed={pressed}
                     handleReset={handleReset}
                     handleApply={handleApply}
-                    handlePressedChange={handlePressedChange}>
-                    <Button variant="outline" size="lg" rounded="full">
-                        <Filter /> Filters
+                    handlePressedChange={handlePressedChange} />
+            </section>
+            <section>
+                <div className="flex justify-between w-full">
+                    <FiltersDrawer
+                        FILTERS={FILTERS}
+                        pressed={pressed}
+                        handleReset={handleReset}
+                        handleApply={handleApply}
+                        handlePressedChange={handlePressedChange}>
+                        <Button variant="outline" size="lg" rounded="full" className="md:hidden">
+                            <Filter /> Filters
+                        </Button>
+                    </FiltersDrawer>
+                    <Button variant="secondary" size="lg" rounded="full" className="ml-auto">
+                        <Map /> Map
                     </Button>
-                </Filters>
-                <Button variant="secondary" size="lg" rounded="full">
-                    <Map /> Map
-                </Button>
-            </div>
-            <ul className="flex flex-col gap-4 mt-4">
-                {isPending || isFetching ? (
-                    <p>Loading...</p>
-                ) : error ? (
-                    <p>Error: {(error as Error).message}</p>
-                ) : data && data.length > 0 ? (
-                    data.map((restaurant: Restaurant) => (
-                        <li key={restaurant.ID}>
-                            <Card className="mx-auto">
-                                <img
-                                    src={restaurant.ImageUrl.Valid ? restaurant.ImageUrl.String : "https://via.placeholder.com/400x200?text=No+Image"}
-                                    alt={restaurant.Name}
-                                    className="w-full aspect-video object-cover"
-                                />
-                                <CardHeader className="">
-                                    <CardAction>
-                                        <p className="w-fit">
-                                            Google Rating: {restaurant.Rating}
-                                        </p>
-                                        <StarRating max={5} init={restaurant.Rating} disabled />
-                                    </CardAction>
-                                    <CardTitle>{restaurant.Name}</CardTitle>
-                                </CardHeader>
-                                <CardContent className='flex flex-col gap-2'>
-                                    {purifyRestaurantTypes(restaurant.Types).length > 0 && (
-                                        <p className='flex items-center gap-x-4'>
-                                            <span className='w-4'>
-                                                <Utensils />
-                                                <span className="sr-only">Types: </span>
-                                            </span>
-                                            <span className='flex gap-x-2'>
-                                                {
-                                                    purifyRestaurantTypes(restaurant.Types).map((type) => (
-                                                        <Badge key={type} variant="outline">
-                                                            {type.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
-                                                        </Badge>
-                                                    ))
-                                                }
-                                            </span>
-
-                                        </p>)}
-                                    {restaurant.PriceLevel > 1 && (<p className="flex items-center gap-x-2">
-                                        <span className='w-4'>
-                                            <CircleDollarSign />
-                                            <span className="sr-only">Price Level: </span>
-                                        </span>
-                                        <span>
-                                            {
-                                                "$".repeat(restaurant.PriceLevel - 1)
-                                            }
-                                        </span>
-                                    </p>)}
-                                    <p className='flex items-center gap-x-4'>
-                                        <span className='w-4'>
-                                            <MapPin />
-                                            <span className="sr-only">Address: </span>
-                                        </span>
-                                        <span>{restaurant.Address}</span>
-                                    </p>
-                                    {restaurant.Website.Valid && <p className='flex items-center gap-x-4'>
-                                        <span className='w-4'>
-                                            <Earth />
-                                            <span className="sr-only">Website: </span>
-                                        </span>
-                                        <Link to={restaurant.Website.String} target="_blank" rel="noopener noreferrer" className='hover:text-blue-400 transition-colors duration-300'>
-                                            {restaurant.Website.String}
-                                        </Link>
-                                    </p>}
-                                    {restaurant.Telephone.Valid && <p className='flex items-center gap-x-4'>
-                                        <span className='w-4'>
-                                            <Phone />
-                                            <span className="sr-only">Phone: </span>
-                                        </span>
-                                        <span>
-                                            {restaurant.Telephone.String}
-                                        </span>
-                                    </p>}
-
-                                    {
-                                        restaurant.Restroom !== undefined && (
+                </div>
+                <ul className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6 mt-4">
+                    {isPending || isFetching ? (
+                        <p>Loading...</p>
+                    ) : error ? (
+                        <p>Error: {(error as Error).message}</p>
+                    ) : data && data.length > 0 ? (
+                        data.map((restaurant: Restaurant) => (
+                            <li key={restaurant.ID} className="h-full">
+                                <Card className="mx-auto h-full">
+                                    <img
+                                        src={restaurant.ImageUrl.Valid ? restaurant.ImageUrl.String : "https://via.placeholder.com/400x200?text=No+Image"}
+                                        alt={restaurant.Name}
+                                        className="w-full aspect-video object-cover"
+                                    />
+                                    <CardHeader className="">
+                                        <CardAction>
+                                            <p className="w-fit">
+                                                Google Rating: {restaurant.Rating}
+                                            </p>
+                                            <StarRating max={5} init={restaurant.Rating} disabled />
+                                        </CardAction>
+                                        <CardTitle>{restaurant.Name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className='flex flex-col gap-2'>
+                                        {purifyRestaurantTypes(restaurant.Types).length > 0 && (
                                             <p className='flex items-center gap-x-4'>
                                                 <span className='w-4'>
-                                                    <Toilet />
-                                                    <span className="sr-only">Restroom: </span>
+                                                    <Utensils />
+                                                    <span className="sr-only">Types: </span>
                                                 </span>
-                                                <span>
-                                                    Restroom Avaiable
+                                                <span className='flex gap-x-2'>
+                                                    {
+                                                        purifyRestaurantTypes(restaurant.Types).map((type) => (
+                                                            <Badge key={type} variant="outline">
+                                                                {type.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                                                            </Badge>
+                                                        ))
+                                                    }
                                                 </span>
-                                            </p>)
-                                    }
-                                </CardContent>
-                            </Card>
-                        </li>
-                    ))
-                ) : (
-                    <p>No restaurants found.</p>
-                )}
-            </ul>
+
+                                            </p>)}
+                                        {restaurant.PriceLevel > 1 && (<p className="flex items-center gap-x-2">
+                                            <span className='w-4'>
+                                                <CircleDollarSign />
+                                                <span className="sr-only">Price Level: </span>
+                                            </span>
+                                            <span>
+                                                {
+                                                    "$".repeat(restaurant.PriceLevel - 1)
+                                                }
+                                            </span>
+                                        </p>)}
+                                        <p className='flex items-center gap-x-4'>
+                                            <span className='w-4'>
+                                                <MapPin />
+                                                <span className="sr-only">Address: </span>
+                                            </span>
+                                            <span>{restaurant.Address}</span>
+                                        </p>
+                                        {restaurant.Website.Valid && <p className='flex items-center gap-x-4'>
+                                            <span className='w-4'>
+                                                <Earth />
+                                                <span className="sr-only">Website: </span>
+                                            </span>
+                                            <Link to={restaurant.Website.String} target="_blank" rel="noopener noreferrer" className='hover:text-blue-400 transition-colors duration-300'>
+                                                {restaurant.Website.String}
+                                            </Link>
+                                        </p>}
+                                        {restaurant.Telephone.Valid && <p className='flex items-center gap-x-4'>
+                                            <span className='w-4'>
+                                                <Phone />
+                                                <span className="sr-only">Phone: </span>
+                                            </span>
+                                            <span>
+                                                {restaurant.Telephone.String}
+                                            </span>
+                                        </p>}
+
+                                        {
+                                            restaurant.Restroom !== undefined && (
+                                                <p className='flex items-center gap-x-4'>
+                                                    <span className='w-4'>
+                                                        <Toilet />
+                                                        <span className="sr-only">Restroom: </span>
+                                                    </span>
+                                                    <span>
+                                                        Restroom Avaiable
+                                                    </span>
+                                                </p>)
+                                        }
+                                    </CardContent>
+                                </Card>
+                            </li>
+                        ))
+                    ) : (
+                        <p>No restaurants found.</p>
+                    )}
+                </ul>
+            </section>
         </main>
     )
 }
