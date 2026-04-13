@@ -26,12 +26,11 @@ function RootComponent() {
             <Outlet />
             <footer className="bg-primary-50 py-8 mt-auto">
                 <div className="container text-center mx-auto">
-                    <p className="text-lg font-thin text-primary-500">
+                    <p className="text-lg font-light text-primary-500">
                         &copy; 2026 HiddenGem. All rights reserved.
                     </p>
                 </div>
             </footer>
-
         </>
     )
 }

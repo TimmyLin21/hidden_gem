@@ -12,59 +12,17 @@ import {
 import { X } from "lucide-react"
 import { Toggle } from "./Toggle"
 import React from "react"
+import { FILTERS, type FilterState } from "@/routes"
 
-const FILTERS = [
-    {
-        label: "Cuisine",
-        options: [
-            { label: "Italian", value: "italian" },
-            { label: "Chinese", value: "chinese" },
-            { label: "Mexican", value: "mexican" },
-        ]
-    },
-    {
-        label: "Price",
-        options: [
-            { label: "$", value: 1 },
-            { label: "$$", value: 2 },
-            { label: "$$$", value: 3 },
-        ]
-    },
-    {
-        label: "Rating",
-        options: [
-            { label: "3 stars & up", value: 3 },
-            { label: "4 stars & up", value: 4 },
-            { label: "4.5 stars & up", value: 4.5 },
-        ]
-    },
-    {
-        label: "Restroom",
-        options: [
-            { label: "Yes", value: "yes" },
-        ]
-    }
-]
 
-interface FilterState {
-    cuisine: Record<string, boolean>;
-    price: string | null;
-    rating: string | null;
-    restroom: string | null;
-}
-
-export function Filters({ children }: { children: React.ReactNode }) {
-    const [pressed, setPressed] = React.useState<FilterState>({
-        cuisine: {
-            italian: false,
-            chinese: false,
-            mexican: false,
-        },
-        price: null,
-        rating: null,
-        restroom: null,
-    })
-
+export function Filters({
+    pressed,
+    setPressed,
+    children }:
+    {
+        pressed: FilterState;
+        setPressed: React.Dispatch<React.SetStateAction<FilterState>>; children: React.ReactNode
+    }) {
     const handlePressedChange = (category: string, value: string) => {
         setPressed((prev) => {
             switch (category) {
@@ -93,9 +51,9 @@ export function Filters({ children }: { children: React.ReactNode }) {
     const handleReset = () => {
         setPressed({
             cuisine: {
-                italian: false,
-                chinese: false,
-                mexican: false,
+                Italian: false,
+                Chinese: false,
+                Mexican: false,
             },
             price: null,
             rating: null,

@@ -15,3 +15,21 @@ func ToNullBool(val *bool) sql.NullBool {
 	}
 	return sql.NullBool{Valid: false}
 }
+
+func HaveValueOverlap[T comparable](s1, s2 []T) bool {
+	// Put the smaller slice into the map for slightly better performance
+	if len(s1) > len(s2) {
+		s1, s2 = s2, s1
+	}
+	set := make(map[T]struct{})
+	for _, item := range s1 {
+		// empty struct{} takes zero bytes, so it is better than using boolean
+		set[item] = struct{}{}
+	}
+	for _, item := range s2 {
+		if _, exists := set[item]; exists {
+			return true
+		}
+	}
+	return false
+}
