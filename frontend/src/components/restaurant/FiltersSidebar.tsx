@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/Button"
-import { Toggle } from "./Toggle"
+import { Toggle } from "../ui/Toggle"
 import { type FilterState } from "@/routes"
 
 

@@ -8,7 +8,9 @@ package database
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -75,16 +77,45 @@ func (q *Queries) CreateRestaurant(ctx context.Context, arg CreateRestaurantPara
 }
 
 const getRestaurantByID = `-- name: GetRestaurantByID :one
-SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants WHERE place_id = $1
+SELECT 
+    id,
+    place_id,
+    name,
+    source_url,
+    rating,
+    price_level,
+    address,
+    website,
+    telephone,
+    types,
+    restroom,
+    image_url,
+    ST_AsGeoJSON(location)::jsonb AS location_json 
+FROM restaurants
+WHERE place_id = $1
 `
 
-func (q *Queries) GetRestaurantByID(ctx context.Context, placeID string) (Restaurant, error) {
+type GetRestaurantByIDRow struct {
+	ID           uuid.UUID
+	PlaceID      string
+	Name         string
+	SourceUrl    string
+	Rating       float64
+	PriceLevel   int32
+	Address      string
+	Website      sql.NullString
+	Telephone    sql.NullString
+	Types        []string
+	Restroom     bool
+	ImageUrl     sql.NullString
+	LocationJson json.RawMessage
+}
+
+func (q *Queries) GetRestaurantByID(ctx context.Context, placeID string) (GetRestaurantByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getRestaurantByID, placeID)
-	var i Restaurant
+	var i GetRestaurantByIDRow
 	err := row.Scan(
 		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.PlaceID,
 		&i.Name,
 		&i.SourceUrl,
@@ -93,10 +124,10 @@ func (q *Queries) GetRestaurantByID(ctx context.Context, placeID string) (Restau
 		&i.Address,
 		&i.Website,
 		&i.Telephone,
-		&i.Location,
 		pq.Array(&i.Types),
 		&i.Restroom,
 		&i.ImageUrl,
+		&i.LocationJson,
 	)
 	return i, err
 }
@@ -129,7 +160,21 @@ func (q *Queries) GetRestaurantBySourceURL(ctx context.Context, sourceUrl string
 }
 
 const getRestaurants = `-- name: GetRestaurants :many
-SELECT id, created_at, updated_at, place_id, name, source_url, rating, price_level, address, website, telephone, location, types, restroom, image_url FROM restaurants
+SELECT 
+    id,
+    place_id,
+    name,
+    source_url,
+    rating,
+    price_level,
+    address,
+    website,
+    telephone,
+    types,
+    restroom,
+    image_url,
+    ST_AsGeoJSON(location)::jsonb AS location_json 
+FROM restaurants
 WHERE
     (name ILIKE '%' || $1::text || '%' OR $1 IS NULL) AND
     (rating >= $2 OR $2 IS NULL) AND
@@ -146,7 +191,23 @@ type GetRestaurantsParams struct {
 	Restroom    sql.NullBool
 }
 
-func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) ([]Restaurant, error) {
+type GetRestaurantsRow struct {
+	ID           uuid.UUID
+	PlaceID      string
+	Name         string
+	SourceUrl    string
+	Rating       float64
+	PriceLevel   int32
+	Address      string
+	Website      sql.NullString
+	Telephone    sql.NullString
+	Types        []string
+	Restroom     bool
+	ImageUrl     sql.NullString
+	LocationJson json.RawMessage
+}
+
+func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) ([]GetRestaurantsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRestaurants,
 		arg.Name,
 		arg.Rating,
@@ -158,13 +219,11 @@ func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Restaurant
+	var items []GetRestaurantsRow
 	for rows.Next() {
-		var i Restaurant
+		var i GetRestaurantsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.PlaceID,
 			&i.Name,
 			&i.SourceUrl,
@@ -173,10 +232,10 @@ func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) 
 			&i.Address,
 			&i.Website,
 			&i.Telephone,
-			&i.Location,
 			pq.Array(&i.Types),
 			&i.Restroom,
 			&i.ImageUrl,
+			&i.LocationJson,
 		); err != nil {
 			return nil, err
 		}

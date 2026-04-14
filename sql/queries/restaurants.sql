@@ -12,7 +12,21 @@ RETURNING *;
 SELECT * FROM restaurants WHERE source_url = $1;
 
 -- name: GetRestaurants :many
-SELECT * FROM restaurants
+SELECT 
+    id,
+    place_id,
+    name,
+    source_url,
+    rating,
+    price_level,
+    address,
+    website,
+    telephone,
+    types,
+    restroom,
+    image_url,
+    ST_AsGeoJSON(location)::jsonb AS location_json 
+FROM restaurants
 WHERE
     (name ILIKE '%' || sqlc.narg('name')::text || '%' OR sqlc.narg('name') IS NULL) AND
     (rating >= sqlc.narg('rating') OR sqlc.narg('rating') IS NULL) AND
@@ -22,7 +36,22 @@ WHERE
 ;
 
 -- name: GetRestaurantByID :one
-SELECT * FROM restaurants WHERE place_id = $1;
+SELECT 
+    id,
+    place_id,
+    name,
+    source_url,
+    rating,
+    price_level,
+    address,
+    website,
+    telephone,
+    types,
+    restroom,
+    image_url,
+    ST_AsGeoJSON(location)::jsonb AS location_json 
+FROM restaurants
+WHERE place_id = $1;
 
 -- name: GetRestaurantsTypes :many
 SELECT DISTINCT unnest(types) AS type FROM restaurants;

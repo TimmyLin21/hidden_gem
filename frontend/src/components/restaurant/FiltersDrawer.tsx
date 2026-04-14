@@ -10,9 +10,9 @@ import {
     DrawerTrigger,
 } from "@/components/ui/Drawer"
 import { X } from "lucide-react"
-import { Toggle } from "./Toggle"
 import React from "react"
 import { type FilterState } from "@/routes"
+import { Toggle } from "../ui/Toggle"
 
 
 export function FiltersDrawer({

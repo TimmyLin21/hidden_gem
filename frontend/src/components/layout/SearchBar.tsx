@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Search } from "lucide-react";
-import { Button } from "./Button";
+import { Button } from "../ui/Button";
 import React from "react";
 
 export const SearchBar = () => {

@@ -1,7 +1,5 @@
 export type Restaurant = {
     ID: string;
-    CreatedAt: string;
-    UpdatedAt: string;
     PlaceID: string;
     Name: string;
     SourceUrl: string;
@@ -21,6 +19,10 @@ export type Restaurant = {
     ImageUrl: {
         String: string;
         Valid: boolean;
+    };
+    LocationJson: {
+        coordinates: [number, number];
+        type: "Point";
     };
 }
 
