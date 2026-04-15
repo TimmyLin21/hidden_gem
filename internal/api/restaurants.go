@@ -52,19 +52,56 @@ func (cfg *Config) HandlerRestaurantsGet(w http.ResponseWriter, r *http.Request)
 		restroomPtr = &val
 	}
 
+	limit := 9
+	page := 1
+	if pageStr := q.Get("page"); pageStr != "" {
+		pageVal, err := strconv.Atoi(pageStr)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid page parameter", err)
+			return
+		}
+		if pageVal > 1 {
+			page = pageVal
+		}
+	}
+	offset := int32((page - 1) * limit)
+
 	restaurants, err := cfg.DB.GetRestaurants(r.Context(), database.GetRestaurantsParams{
 		Name:        utils.ToNullString(namePtr),
 		Rating:      utils.ToNullFloat64(ratingPtr),
 		PriceLevels: priceLevels,
 		Types:       types,
 		Restroom:    utils.ToNullBool(restroomPtr),
+		Offset:      utils.ToNullInt32(&offset),
 	})
 
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve restaurants", err)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, restaurants)
+
+	count, err := cfg.DB.GetRestaurantsCount(r.Context(), database.GetRestaurantsCountParams{
+		Name:        utils.ToNullString(namePtr),
+		Rating:      utils.ToNullFloat64(ratingPtr),
+		PriceLevels: priceLevels,
+		Types:       types,
+		Restroom:    utils.ToNullBool(restroomPtr),
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve restaurants count", err)
+		return
+	}
+
+	totalPages := (count + int64(limit) - 1) / int64(limit)
+
+	respondWithJSON(w, http.StatusOK, RestaurantMetadataResponse{
+		Data: restaurants,
+		Meta: PaginationMeta{
+			TotalCount:  count,
+			CurrentPage: page,
+			TotalPages:  totalPages,
+		},
+	})
 }
 
 func (cfg *Config) HandlerRestaurantsGetByID(w http.ResponseWriter, r *http.Request) {

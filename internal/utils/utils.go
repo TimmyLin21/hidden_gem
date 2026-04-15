@@ -23,6 +23,13 @@ func ToNullString(val *string) sql.NullString {
 	return sql.NullString{Valid: false}
 }
 
+func ToNullInt32(val *int32) sql.NullInt32 {
+	if val != nil {
+		return sql.NullInt32{Valid: true, Int32: *val}
+	}
+	return sql.NullInt32{Valid: false}
+}
+
 func HaveValueOverlap[T comparable](s1, s2 []T) bool {
 	// Put the smaller slice into the map for slightly better performance
 	if len(s1) > len(s2) {

@@ -33,7 +33,18 @@ WHERE
     (price_level = ANY(sqlc.narg('price_levels')::int[]) OR sqlc.narg('price_levels') IS NULL) AND
     (types && sqlc.narg('types')::text[] OR sqlc.narg('types') IS NULL) AND
     (restroom = sqlc.narg('restroom') OR sqlc.narg('restroom') IS NULL)
+ORDER BY rating DESC
+LIMIT 9 OFFSET sqlc.narg('offset')
 ;
+
+-- name: GetRestaurantsCount :one
+SELECT COUNT(*) FROM restaurants
+WHERE
+    (name ILIKE '%' || sqlc.narg('name')::text || '%' OR sqlc.narg('name') IS NULL) AND
+    (rating >= sqlc.narg('rating') OR sqlc.narg('rating') IS NULL) AND
+    (price_level = ANY(sqlc.narg('price_levels')::int[]) OR sqlc.narg('price_levels') IS NULL) AND
+    (types && sqlc.narg('types')::text[] OR sqlc.narg('types') IS NULL) AND
+    (restroom = sqlc.narg('restroom') OR sqlc.narg('restroom') IS NULL);
 
 -- name: GetRestaurantByID :one
 SELECT 

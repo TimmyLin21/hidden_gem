@@ -181,6 +181,8 @@ WHERE
     (price_level = ANY($3::int[]) OR $3 IS NULL) AND
     (types && $4::text[] OR $4 IS NULL) AND
     (restroom = $5 OR $5 IS NULL)
+ORDER BY rating DESC
+LIMIT 9 OFFSET $6
 `
 
 type GetRestaurantsParams struct {
@@ -189,6 +191,7 @@ type GetRestaurantsParams struct {
 	PriceLevels []int32
 	Types       []string
 	Restroom    sql.NullBool
+	Offset      sql.NullInt32
 }
 
 type GetRestaurantsRow struct {
@@ -214,6 +217,7 @@ func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) 
 		pq.Array(arg.PriceLevels),
 		pq.Array(arg.Types),
 		arg.Restroom,
+		arg.Offset,
 	)
 	if err != nil {
 		return nil, err
@@ -248,6 +252,37 @@ func (q *Queries) GetRestaurants(ctx context.Context, arg GetRestaurantsParams) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRestaurantsCount = `-- name: GetRestaurantsCount :one
+SELECT COUNT(*) FROM restaurants
+WHERE
+    (name ILIKE '%' || $1::text || '%' OR $1 IS NULL) AND
+    (rating >= $2 OR $2 IS NULL) AND
+    (price_level = ANY($3::int[]) OR $3 IS NULL) AND
+    (types && $4::text[] OR $4 IS NULL) AND
+    (restroom = $5 OR $5 IS NULL)
+`
+
+type GetRestaurantsCountParams struct {
+	Name        sql.NullString
+	Rating      sql.NullFloat64
+	PriceLevels []int32
+	Types       []string
+	Restroom    sql.NullBool
+}
+
+func (q *Queries) GetRestaurantsCount(ctx context.Context, arg GetRestaurantsCountParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getRestaurantsCount,
+		arg.Name,
+		arg.Rating,
+		pq.Array(arg.PriceLevels),
+		pq.Array(arg.Types),
+		arg.Restroom,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getRestaurantsTypes = `-- name: GetRestaurantsTypes :many
