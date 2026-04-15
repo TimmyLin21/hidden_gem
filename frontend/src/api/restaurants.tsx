@@ -26,7 +26,18 @@ export type Restaurant = {
     };
 }
 
-export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean, query?: string): Promise<Restaurant[]> => {
+export type PaginationMeta = {
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+}
+
+export type RestaurantMetadataResponse = {
+    data: Restaurant[];
+    meta: PaginationMeta;
+}
+
+export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean, query?: string): Promise<RestaurantMetadataResponse> => {
     const querys = [];
     if (rating !== undefined) {
         querys.push(`rating=${rating}`);
