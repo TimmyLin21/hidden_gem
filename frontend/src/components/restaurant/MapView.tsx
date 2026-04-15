@@ -1,27 +1,18 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import type { Restaurant } from "@/api/restaurants";
+import type { Restaurant, RestaurantMetadataResponse } from "@/api/restaurants";
 import { Button } from "../ui/Button";
 import { Utensils, X } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import { Badge } from "../ui/Badge";
-import { purifyRestaurantTypes } from "@/routes";
-import { cn } from "@/lib/utils";
+import { cn, getRestaurantsTypesString } from "@/lib/utils";
 
 interface MapProps {
-    data: Restaurant[] | undefined;
+    data: RestaurantMetadataResponse | undefined;
     handleCloseMap: () => void;
     activeId?: string | null;
     hoveredId?: string | null;
     onSelect: (id: string) => void;
-}
-
-function getRestaurantsTypesString(types: string[]): string {
-    const purifiedTypes = purifyRestaurantTypes(types);
-    return purifiedTypes.map((type) => {
-        const words = type.split("_");
-        return words.filter((word) => word !== "restaurant").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-    }).join(", ");
 }
 
 const MarkerIcon = ({ restaurant, isHovered, isActive, onSelect }: { restaurant: Restaurant, isHovered: boolean, isActive: boolean, onSelect: (id: string) => void }) => {
@@ -86,7 +77,7 @@ export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }:
 
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current!,
-            center: data[0].LocationJson.coordinates,
+            center: data.data[0].LocationJson.coordinates,
             zoom: 15,
         });
 
@@ -100,7 +91,7 @@ export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }:
     useEffect(() => {
         if (!mapRef.current || data == undefined) return;
 
-        for (const restaurant of data) {
+        for (const restaurant of data.data) {
             if (!markerRootsRef.current.has(restaurant.ID)) {
                 const element = document.createElement("div");
                 const root = createRoot(element);
@@ -144,7 +135,7 @@ export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }:
     useEffect(() => {
         if (!mapRef.current || !activeId || data == undefined) return;
 
-        const selected = data.find((restaurant) => restaurant.ID === activeId);
+        const selected = data.data.find((restaurant) => restaurant.ID === activeId);
 
         if (selected) {
             mapRef.current.flyTo({

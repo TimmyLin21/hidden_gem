@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/Button'
 import { FiltersDrawer } from '@/components/restaurant/FiltersDrawer'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Filter, Map } from 'lucide-react'
+import { Filter, Map as MapIcon } from 'lucide-react'
 import React from 'react'
 
 import { FiltersSidebar } from '@/components/restaurant/FiltersSidebar'
 import { RestaurantsList } from '@/components/restaurant/RestaurantsList'
 import { cn } from '@/lib/utils'
 import { MapView } from '@/components/restaurant/MapView'
+import { RestaurantsSort } from '@/components/restaurant/RestaurantsSort'
 
 
 export const Route = createFileRoute('/')({
@@ -21,6 +22,8 @@ export const Route = createFileRoute('/')({
             rating: typeof search.rating === "number" ? search.rating : undefined,
             restroom: typeof search.restroom === "boolean" ? search.restroom : undefined,
             showMap: typeof search.showMap === "boolean" ? search.showMap : undefined,
+            activeId: typeof search.activeId === "string" ? search.activeId : undefined,
+            page: typeof search.page === "number" ? search.page : undefined,
         };
     },
     component: Home,
@@ -34,6 +37,7 @@ type RestaurantSearch = {
     restroom?: boolean;
     showMap?: boolean;
     activeId?: string;
+    page?: number;
 }
 
 export interface FilterState {
@@ -71,7 +75,7 @@ export function purifyRestaurantTypes(types: string[]): string[] {
 
 function Home() {
     const navigate = useNavigate();
-    const { query, types, price_level, rating, restroom, showMap, activeId } = Route.useSearch();
+    const { query, types, price_level, rating, restroom, showMap, activeId, page } = Route.useSearch();
     const { data: restaurantTypes } = useQuery({
         queryKey: ["restaurantTypes"],
         queryFn: () => fetchRestaurantTypes(),
@@ -113,13 +117,15 @@ function Home() {
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
     const { isPending, error, data, isFetching } = useQuery({
         // Refetch data whenever any of the search parameters change
-        queryKey: ["restaurants", { query, types, price_level, rating, restroom }],
+        queryKey: ["restaurants", { query, types, price_level, rating, restroom, page }],
         queryFn: () => fetchRestaurants(
             rating != undefined ? rating : undefined,
             price_level != undefined ? price_level : undefined,
             types,
             restroom != undefined ? restroom : undefined,
-            query != undefined ? query : undefined),
+            query != undefined ? query : undefined,
+            page != undefined ? page : undefined,
+        ),
     })
 
     const handlePressedChange = (category: string, value: string) => {
@@ -164,6 +170,7 @@ function Home() {
                 types: activeTypes.length > 0 ? activeTypes : undefined,
                 restroom: pressed.restroom === "true" || pressed.restroom === "yes" ? true : undefined,
                 showMap: showMap ? true : undefined,
+                page: 1,
             }
         })
     }
@@ -248,8 +255,12 @@ function Home() {
                                     </Button>
                                 </FiltersDrawer>
                                 <Button variant="secondary" size="lg" rounded="full" className="ml-auto" onClick={handleShowMap}>
-                                    <Map /> Map
+                                    <MapIcon /> Map
                                 </Button>
+                            </div>
+                            <div className="relative flex justify-between items-center w-full mt-4">
+                                <p className='font-light text-neutral-500'>{data?.meta.total_count || 0} results</p>
+                                <RestaurantsSort showMap={showMap} />
                             </div>
                             <RestaurantsList
                                 isPending={isPending}
@@ -288,6 +299,10 @@ function Home() {
                                         <Filter /> Filters
                                     </Button>
                                 </FiltersDrawer>
+                            </div>
+                            <div className="flex justify-between items-center w-full mt-4">
+                                <p className='font-light text-neutral-500'>{data?.meta.total_count || 0} results</p>
+                                <RestaurantsSort showMap={showMap} />
                             </div>
                             <RestaurantsList
                                 isPending={isPending}

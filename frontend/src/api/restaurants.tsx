@@ -37,7 +37,7 @@ export type RestaurantMetadataResponse = {
     meta: PaginationMeta;
 }
 
-export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean, query?: string): Promise<RestaurantMetadataResponse> => {
+export const fetchRestaurants = async (rating?: number, price_level?: number, types?: string[], restroom?: boolean, query?: string, page?: number): Promise<RestaurantMetadataResponse> => {
     const querys = [];
     if (rating !== undefined) {
         querys.push(`rating=${rating}`);
@@ -53,6 +53,9 @@ export const fetchRestaurants = async (rating?: number, price_level?: number, ty
     }
     if (query !== undefined) {
         querys.push(`query=${encodeURIComponent(query)}`);
+    }
+    if (page !== undefined) {
+        querys.push(`page=${page}`);
     }
     const queryString = querys.length > 0 ? `?${querys.join("&")}` : "";
     const response = await fetch(`/api/restaurants${queryString}`);

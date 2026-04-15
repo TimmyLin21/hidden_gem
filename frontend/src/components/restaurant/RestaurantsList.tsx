@@ -1,4 +1,4 @@
-import type { Restaurant } from '@/api/restaurants'
+import type { Restaurant, RestaurantMetadataResponse } from '@/api/restaurants'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import StarRating from '@/components/ui/StarRating'
 import { Badge } from '@/components/ui/Badge'
@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { CircleDollarSign, Earth, MapPin, Phone, Toilet, Utensils } from 'lucide-react'
 import { purifyRestaurantTypes } from '@/routes'
 import { Link } from '@tanstack/react-router'
+import { RestaurantsPagination } from './RestaurantsPagination'
 
 export function RestaurantsList(
     {
@@ -19,7 +20,7 @@ export function RestaurantsList(
         isPending: boolean;
         isFetching: boolean;
         error: unknown;
-        data: Restaurant[] | undefined;
+        data: RestaurantMetadataResponse | undefined;
         onHover?: (id: string | null) => void;
         onSelect?: (id: string) => void;
     }
@@ -46,8 +47,8 @@ export function RestaurantsList(
                 ))
             ) : error ? (
                 <p>Error: {(error as Error).message}</p>
-            ) : data && data.length > 0 ? (
-                data.map((restaurant: Restaurant) => (
+            ) : data && data.data.length > 0 ? (
+                data.data.map((restaurant: Restaurant) => (
                     <li
                         onClick={() => onSelect ? onSelect(restaurant.ID) : undefined}
                         onMouseEnter={() => onHover ? onHover(restaurant.ID) : undefined}
@@ -144,6 +145,7 @@ export function RestaurantsList(
             ) : (
                 <p>No restaurants found.</p>
             )}
+            <RestaurantsPagination meta={data?.meta} />
         </ul>
     )
 }

@@ -21,20 +21,22 @@ function RootComponent() {
     const showMap = search.showMap === true;
 
     React.useEffect(() => {
+        const body = document.body;
+        const html = document.documentElement;
         if (showMap) {
-            document.documentElement.style.overflow = 'hidden'
-            document.body.style.overflow = 'hidden'
-            document.body.style.height = "100%"
+            html.style.overflow = 'hidden'
+            body.style.overflow = 'hidden'
+            body.style.height = "100%"
         } else {
-            document.documentElement.style.overflow = 'auto'
-            document.body.style.overflow = 'auto'
-            document.body.style.height = "auto"
+            html.style.overflow = 'auto'
+            body.style.overflow = 'auto'
+            body.style.height = "auto"
         }
 
         return () => {
-            document.documentElement.style.overflow = 'auto'
-            document.body.style.overflow = 'auto'
-            document.body.style.height = "auto"
+            html.style.overflow = 'auto'
+            body.style.overflow = 'auto'
+            body.style.height = "auto"
         }
     }, [showMap])
 
