@@ -63,6 +63,39 @@ const MarkerIcon = ({ restaurant, isHovered, isActive, onSelect }: { restaurant:
     )
 }
 
+function createMarkers(
+    initial: boolean,
+    restaurants: Restaurant[],
+    hoveredId: string | null | undefined,
+    activeId: string | null | undefined,
+    mapRef: React.RefObject<mapboxgl.Map | null>,
+    markerRootsRef: React.RefObject<Map<string, any>>,
+    onSelect: (id: string) => void
+) {
+    for (const restaurant of restaurants) {
+        if (initial || !markerRootsRef.current.has(restaurant.ID)) {
+            const element = document.createElement("div");
+            const root = createRoot(element);
+            markerRootsRef.current.set(restaurant.ID, root);
+
+            new mapboxgl.Marker({ element: element })
+                .setLngLat(restaurant.LocationJson.coordinates)
+                .addTo(mapRef.current!);
+        }
+
+        const isHovered = hoveredId === restaurant.ID;
+        const isActive = activeId === restaurant.ID;
+
+        markerRootsRef.current.get(restaurant.ID).render(
+            <MarkerIcon
+                restaurant={restaurant}
+                isHovered={isHovered}
+                isActive={isActive}
+                onSelect={onSelect} />
+        )
+    }
+}
+
 export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }: MapProps) => {
     const mapRef = useRef<mapboxgl.Map | null>(null);
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -81,6 +114,8 @@ export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }:
             zoom: 15,
         });
 
+        createMarkers(true, data.data, hoveredId, activeId, mapRef, markerRootsRef, onSelect);
+
         return () => {
             mapRef.current?.remove();
             mapRef.current = null;
@@ -91,28 +126,7 @@ export const MapView = ({ data, handleCloseMap, activeId, hoveredId, onSelect }:
     useEffect(() => {
         if (!mapRef.current || data == undefined) return;
 
-        for (const restaurant of data.data) {
-            if (!markerRootsRef.current.has(restaurant.ID)) {
-                const element = document.createElement("div");
-                const root = createRoot(element);
-                markerRootsRef.current.set(restaurant.ID, root);
-
-                new mapboxgl.Marker({ element: element })
-                    .setLngLat(restaurant.LocationJson.coordinates)
-                    .addTo(mapRef.current!);
-            }
-
-            const isHovered = hoveredId === restaurant.ID;
-            const isActive = activeId === restaurant.ID;
-
-            markerRootsRef.current.get(restaurant.ID).render(
-                <MarkerIcon
-                    restaurant={restaurant}
-                    isHovered={isHovered}
-                    isActive={isActive}
-                    onSelect={onSelect} />
-            )
-        }
+        createMarkers(false, data.data, hoveredId, activeId, mapRef, markerRootsRef, onSelect);
     }, [data, hoveredId, activeId]);
 
     // Effect to handle map resizing
