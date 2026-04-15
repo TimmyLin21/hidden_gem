@@ -13,11 +13,15 @@ export function RestaurantsList(
         isFetching,
         error,
         data,
+        onHover,
+        onSelect,
     }: {
         isPending: boolean;
         isFetching: boolean;
         error: unknown;
         data: Restaurant[] | undefined;
+        onHover?: (id: string | null) => void;
+        onSelect?: (id: string) => void;
     }
 ) {
     return (
@@ -44,7 +48,13 @@ export function RestaurantsList(
                 <p>Error: {(error as Error).message}</p>
             ) : data && data.length > 0 ? (
                 data.map((restaurant: Restaurant) => (
-                    <li key={restaurant.ID} id={`restaurant-${restaurant.ID}`} className="h-full">
+                    <li
+                        onClick={() => onSelect ? onSelect(restaurant.ID) : undefined}
+                        onMouseEnter={() => onHover ? onHover(restaurant.ID) : undefined}
+                        onMouseLeave={() => onHover ? onHover(null) : undefined}
+                        key={restaurant.ID}
+                        id={`restaurant-${restaurant.ID}`}
+                        className="h-full">
                         <Card className="mx-auto h-full">
                             <img
                                 src={restaurant.ImageUrl.Valid ? restaurant.ImageUrl.String : "https://via.placeholder.com/400x200?text=No+Image"}

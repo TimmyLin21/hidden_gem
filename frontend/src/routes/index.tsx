@@ -33,6 +33,7 @@ type RestaurantSearch = {
     rating?: number;
     restroom?: boolean;
     showMap?: boolean;
+    activeId?: string;
 }
 
 export interface FilterState {
@@ -70,7 +71,7 @@ export function purifyRestaurantTypes(types: string[]): string[] {
 
 function Home() {
     const navigate = useNavigate();
-    const { query, types, price_level, rating, restroom, showMap } = Route.useSearch();
+    const { query, types, price_level, rating, restroom, showMap, activeId } = Route.useSearch();
     const { data: restaurantTypes } = useQuery({
         queryKey: ["restaurantTypes"],
         queryFn: () => fetchRestaurantTypes(),
@@ -109,6 +110,7 @@ function Home() {
         ];
     }, [restaurantTypes]);
     const [pressed, setPressed] = React.useState<FilterState>(getInitialFilterState(restaurantTypes, types, price_level, rating, restroom));
+    const [hoveredId, setHoveredId] = React.useState<string | null>(null);
     const { isPending, error, data, isFetching } = useQuery({
         // Refetch data whenever any of the search parameters change
         queryKey: ["restaurants", { query, types, price_level, rating, restroom }],
@@ -178,7 +180,6 @@ function Home() {
             }
         })
     }
-
     const handleCloseMap = () => {
         navigate({
             to: "/",
@@ -192,6 +193,21 @@ function Home() {
             }
         })
     }
+    const handleSelectRestaurant = (id: string) => {
+        navigate({
+            to: "/",
+            search: {
+                query,
+                rating,
+                price_level,
+                types,
+                restroom,
+                showMap,
+                activeId: id,
+            }
+        })
+    }
+
 
     // Sync pressed state with URL search params on initial load and when restaurantTypes are fetched
     React.useEffect(() => {
@@ -205,7 +221,7 @@ function Home() {
             cn(
                 "w-full mx-auto",
                 !showMap && "container flex gap-x-6 md:gap-x-12 mb-12",
-                showMap && "flex flex-col h-dvh overflow-hidden"
+                showMap && "flex flex-col h-dvh overflow-hidden md:flex-row-reverse"
             )
         }>
             {
@@ -251,9 +267,14 @@ function Home() {
                         <MapView
                             data={data}
                             handleCloseMap={handleCloseMap}
+                            activeId={activeId}
+                            hoveredId={hoveredId}
+                            onSelect={handleSelectRestaurant}
                         />
 
-                        <section className="flex-1 min-w-0 py-4 overflow-y-auto px-4 relative" id="restaurant-list-container">
+                        <section
+                            className="flex-1 min-w-0 py-4 overflow-y-auto px-4 relative md:w-100 md:flex-none"
+                            id="restaurant-list-container">
                             <div
                                 className="flex justify-between w-full"
                             >
@@ -263,7 +284,7 @@ function Home() {
                                     handleReset={handleReset}
                                     handleApply={handleApply}
                                     handlePressedChange={handlePressedChange}>
-                                    <Button variant="outline" size="lg" rounded="full" className="md:hidden">
+                                    <Button variant="outline" size="lg" rounded="full">
                                         <Filter /> Filters
                                     </Button>
                                 </FiltersDrawer>
@@ -273,7 +294,8 @@ function Home() {
                                 isFetching={isFetching}
                                 error={error}
                                 data={data}
-
+                                onHover={setHoveredId}
+                                onSelect={handleSelectRestaurant}
                             />
                         </section>
 
