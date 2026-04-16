@@ -22,7 +22,7 @@ export const SearchBar = () => {
 
     return (
         <form
-            className="relative md:min-w-120 md:max-w-1/3 lg:min-w-150 w-full"
+            className="relative md:min-w-100 md:max-w-1/3 lg:min-w-150 w-full"
             onSubmit={handleSubmit}
         >
             <label
@@ -44,6 +44,7 @@ export const SearchBar = () => {
             <Button
                 type="submit"
                 size="lg"
+                variant="secondary"
                 className="absolute top-0 bottom-0 right-0 text-xl rounded-[28px] px-6 h-full"
             >
                 Search

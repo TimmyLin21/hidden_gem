@@ -1,4 +1,8 @@
+import { CrawlAlertDialog } from '@/components/layout/CrawlAlertDialog'
+import { MenuDrawer } from '@/components/layout/MenuDrawer'
 import { SearchBar } from '@/components/layout/SearchBar'
+import { SettingDialog } from '@/components/layout/SettingDialog'
+import { Button } from '@/components/ui/Button'
 import { Link, Outlet, createRootRoute, useSearch } from '@tanstack/react-router'
 import React from 'react'
 
@@ -44,11 +48,34 @@ function RootComponent() {
         <>
             {!showMap && <>
                 <header className='container py-4 mb-6 mx-auto flex items-center justify-between gap-x-4'>
+                    <MenuDrawer />
                     <Link to="/" className='flex items-center gap-x-2 w-fit'>
                         <img src="/images/logo.svg" alt="Hidden Gem Logo" className='w-12' />
-                        <h1 className='not-md:sr-only text-4xl font-bold'>Hidden Gem</h1>
+                        <h1 className='hidden sr-only md:block md:not-sr-only text-4xl font-bold'>Hidden Gem</h1>
                     </Link>
                     <SearchBar />
+                    <div className='flex items-center gap-x-4'>
+                        <SettingDialog>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                rounded="full"
+                                className="hidden md:block"
+                            >
+                                Settings
+                            </Button>
+                        </SettingDialog>
+                        <CrawlAlertDialog>
+                            <Button
+                                variant="default"
+                                size="lg"
+                                rounded="full"
+                                className="hidden md:block"
+                            >
+                                Crawl
+                            </Button>
+                        </CrawlAlertDialog>
+                    </div>
                 </header>
                 <Outlet />
                 <footer className="bg-primary-50 py-8 mt-auto">
