@@ -65,7 +65,7 @@ export function FiltersDrawer({
                                 <h3 className="text-lg font-semibold mb-2">
                                     {filter.label}
                                 </h3>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {
                                         filter.options.map((option) => {
                                             const categoryKey = filter.label.toLowerCase() as keyof FilterState;

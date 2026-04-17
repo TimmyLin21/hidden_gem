@@ -37,3 +37,9 @@ type PlacesResponse struct {
 		Restroom  bool     `json:"restroom"`
 	} `json:"places"`
 }
+
+type GoogleAPIError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}

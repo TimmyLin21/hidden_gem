@@ -33,7 +33,7 @@ WHERE
     (price_level = ANY(sqlc.narg('price_levels')::int[]) OR sqlc.narg('price_levels') IS NULL) AND
     (types && sqlc.narg('types')::text[] OR sqlc.narg('types') IS NULL) AND
     (restroom = sqlc.narg('restroom') OR sqlc.narg('restroom') IS NULL)
-ORDER BY rating DESC
+ORDER BY rating DESC, id ASC
 LIMIT 9 OFFSET sqlc.narg('offset')
 ;
 

@@ -15,7 +15,7 @@ export function SettingDialog(
     }
 ) {
     const [userSettings, setUserSettings] = useLocalStorage("user-settings", {
-        domain: "",
+        startURL: "",
         googleMapsApiKey: "",
     })
 
@@ -24,13 +24,13 @@ export function SettingDialog(
 
         try {
             const formData = new FormData(e.currentTarget);
-            const domain = formData.get("domain") as string;
+            const startURL = formData.get("startURL") as string;
             const googleMapsApiKey = formData.get("googleMapsApiKey") as string;
 
-            if (!domain.startsWith("http")) {
+            if (!startURL.startsWith("http")) {
                 return toast.error("Please enter a valid URL starting with http/https")
             }
-            setUserSettings({ domain, googleMapsApiKey });
+            setUserSettings({ startURL, googleMapsApiKey });
             toast.success("Settings saved successfully!")
 
         } catch (error) {
@@ -54,12 +54,12 @@ export function SettingDialog(
                         </DialogDescription>
                     </DialogHeader>
                     <Field className="mt-2">
-                        <FieldLabel htmlFor="domain">Domain</FieldLabel>
+                        <FieldLabel htmlFor="start-url">Start URL</FieldLabel>
                         <Input
-                            defaultValue={userSettings.domain}
-                            id="domain"
+                            defaultValue={userSettings.startURL}
+                            id="start-url"
                             type="text"
-                            name="domain"
+                            name="startURL"
                             placeholder="https://www.timeout.com/sydney/food-drink"
                         />
                         <FieldDescription>

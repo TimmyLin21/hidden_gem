@@ -1,7 +1,18 @@
 
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/AlertDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/Tooltip";
+import { Button } from "../ui/Button";
+import { Info } from "lucide-react";
 
 export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
+    const [userSettings] = useLocalStorage("user-settings", {
+        startURL: "",
+        googleMapsApiKey: "",
+    })
+
+    const isDisabled = !userSettings.startURL || !userSettings.googleMapsApiKey;
+
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -13,6 +24,16 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
                         className="text-lg"
                     >
                         Confirm Crawl Initiative
+                        {isDisabled && (<Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="icon" rounded="full" className="ml-2">
+                                    <Info />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                                <p>You need to enter a start URL and a Google Maps API key to proceed.</p>
+                            </TooltipContent>
+                        </Tooltip>)}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                         <p className="mb-2">
@@ -33,7 +54,11 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Start</AlertDialogAction>
+                    <AlertDialogAction
+                        disabled={isDisabled}
+                    >
+                        Start
+                    </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

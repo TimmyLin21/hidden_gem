@@ -90,7 +90,7 @@ export function RestaurantsList(
 
                                     </p>)}
                                 {restaurant.PriceLevel > 1 && (<p className="flex items-center gap-x-2">
-                                    <span className='w-4'>
+                                    <span className='w-4 mr-2'>
                                         <CircleDollarSign />
                                         <span className="sr-only">Price Level: </span>
                                     </span>

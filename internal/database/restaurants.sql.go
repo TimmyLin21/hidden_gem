@@ -181,7 +181,7 @@ WHERE
     (price_level = ANY($3::int[]) OR $3 IS NULL) AND
     (types && $4::text[] OR $4 IS NULL) AND
     (restroom = $5 OR $5 IS NULL)
-ORDER BY rating DESC
+ORDER BY rating DESC, id ASC
 LIMIT 9 OFFSET $6
 `
 

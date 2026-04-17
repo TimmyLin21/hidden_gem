@@ -17,6 +17,10 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
+func (e *GoogleAPIError) Error() string {
+	return fmt.Sprintf("Google API error: code=%d, status=%s, message=%s", e.Code, e.Status, e.Message)
+}
+
 func (p *PriceLevel) UnmarshalJSON(b []byte) error {
 	var s string
 	if err := json.Unmarshal(b, &s); err != nil {
@@ -67,8 +71,14 @@ func (c *Client) GetPlaceFromMessy(ctx context.Context, messyName, address strin
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		var errorWrapper struct {
+			Error GoogleAPIError `json:"error"`
+		}
 		body, _ := io.ReadAll(resp.Body)
-		return PlacesResponse{}, fmt.Errorf("API request failed with status: %s, response: %s", resp.Status, string(body))
+		if err := json.Unmarshal(body, &errorWrapper); err != nil {
+			return PlacesResponse{}, fmt.Errorf("failed to decode error: %w", err)
+		}
+		return PlacesResponse{}, &errorWrapper.Error
 	}
 
 	body, err := io.ReadAll(resp.Body)

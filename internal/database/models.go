@@ -11,6 +11,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type CrawlJob struct {
+	ID           uuid.UUID
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Status       string
+	StartUrl     string
+	ErrorMessage sql.NullString
+}
+
 type Restaurant struct {
 	ID         uuid.UUID
 	CreatedAt  time.Time

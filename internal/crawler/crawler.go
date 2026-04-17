@@ -16,7 +16,7 @@ func StartCrawling(allowedDomain, startURL string) ([]Restaurant, error) {
 
 	c := colly.NewCollector(
 		colly.AllowedDomains(allowedDomain),
-		colly.MaxDepth(3),
+		colly.MaxDepth(2),
 	)
 
 	c.Limit(&colly.LimitRule{
@@ -56,4 +56,12 @@ func StartCrawling(allowedDomain, startURL string) ([]Restaurant, error) {
 	c.Visit(startURL)
 
 	return restaurants, nil
+}
+
+func GetDomain(url string) (string, error) {
+	parts := strings.Split(url, "/")
+	if len(parts) >= 3 {
+		return parts[2], nil
+	}
+	return "", fmt.Errorf("invalid URL format")
 }

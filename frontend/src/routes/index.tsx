@@ -70,7 +70,7 @@ function getInitialFilterState(
 }
 
 export function purifyRestaurantTypes(types: string[]): string[] {
-    return types.filter((type) => !["point_of_interest", "restaurant", "food", "establishment"].includes(type));
+    return types.filter((type) => !["point_of_interest", "restaurant", "food", "establishment", "gift_shop", "service", "wholesaler", "food_store", "event_venue", "storage", "catering_service", "wedding_venue", "liquor_store", "tourist_attraction", "manufacturer", "food_court", "store", "meal_takeaway", "coffee_shop", "meal_delivery", "breakfast_restaurant", "confectionery", "food_delivery"].includes(type));
 }
 
 function Home() {
