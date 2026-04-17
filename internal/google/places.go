@@ -2,6 +2,7 @@ package google
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +11,10 @@ import (
 )
 
 func NewClient(apiKey string) *Client {
-	return &Client{apiKey: apiKey}
+	return &Client{
+		apiKey:     apiKey,
+		httpClient: &http.Client{},
+	}
 }
 
 func (p *PriceLevel) UnmarshalJSON(b []byte) error {
@@ -36,7 +40,7 @@ func (p *PriceLevel) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (c *Client) GetPlaceFromMessy(messyName, address string) (PlacesResponse, error) {
+func (c *Client) GetPlaceFromMessy(ctx context.Context, messyName, address string) (PlacesResponse, error) {
 	const URL = "https://places.googleapis.com/v1/places:searchText"
 
 	payload := map[string]string{
@@ -47,23 +51,24 @@ func (c *Client) GetPlaceFromMessy(messyName, address string) (PlacesResponse, e
 		return PlacesResponse{}, fmt.Errorf("Error marshaling payload: %s", err)
 	}
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequestWithContext(ctx, "POST", URL, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return PlacesResponse{}, fmt.Errorf("Error creating request: %s", err)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Goog-Api-Key", c.apiKey)
 	req.Header.Set("X-Goog-FieldMask", "places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.location,places.websiteUri,places.nationalPhoneNumber,places.types,places.restroom")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return PlacesResponse{}, fmt.Errorf("Error making API request: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return PlacesResponse{}, fmt.Errorf("API request failed with status: %s", resp.Status)
+		body, _ := io.ReadAll(resp.Body)
+		return PlacesResponse{}, fmt.Errorf("API request failed with status: %s, response: %s", resp.Status, string(body))
 	}
 
 	body, err := io.ReadAll(resp.Body)

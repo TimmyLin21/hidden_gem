@@ -1,7 +1,10 @@
 package google
 
+import "net/http"
+
 type Client struct {
-	apiKey string
+	apiKey     string
+	httpClient *http.Client
 }
 
 type PriceLevel int
