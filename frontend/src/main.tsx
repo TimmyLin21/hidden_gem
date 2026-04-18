@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import './index.css'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from './components/ui/Tooltip'
-import { Toaster } from 'sonner'
+import { toast, Toaster } from 'sonner'
 
 const router = createRouter({
   routeTree,
@@ -21,7 +21,17 @@ declare module '@tanstack/react-router' {
 }
 
 const rootElement = document.getElementById('root')!
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      if (query.meta?.errorMessage) {
+        toast.error(query.meta.errorMessage as string, {
+          description: error.message
+        })
+      }
+    }
+  })
+})
 
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
