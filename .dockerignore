@@ -1,0 +1,7 @@
+frontend/
+main
+.env
+vendor/
+.git
+.gitignore
+Dockerfile

@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=hidden_gem
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d hidden_gem" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    image: golang:1.26-alpine
+    volumes:
+      - ./sql/schema:/migrations
+    environment:
+      - DB_URL=postgres://user:pass@db:5432/hidden_gem?sslmode=disable
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        go install github.com/pressly/goose/v3/cmd/goose@latest
+        /go/bin/goose -dir /migrations postgres "$$DB_URL" up
+    depends_on:
+      db:
+        condition: service_healthy
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    environment:
+      DB_URL: postgres://user:pass@db:5432/hidden_gem?sslmode=disable
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_MAPBOX_TOKEN=pk.eyJ1IjoidGltbXlsaW4iLCJhIjoiY20xcnBrcWR4MGRrMjJtcHpzM254OXVvbyJ9.8w1fGABq-M3ZaQnrKCSJxA
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+volumes:
+  pgdata:

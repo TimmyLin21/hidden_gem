@@ -16,10 +16,7 @@ import (
 func main() {
 	const port = "8080"
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(fmt.Errorf("Error loading .env file: %s", err))
-	}
+	_ = godotenv.Load()
 
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
