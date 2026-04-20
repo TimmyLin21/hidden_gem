@@ -6,12 +6,12 @@ import { Button } from "../ui/Button";
 import { Info } from "lucide-react";
 import React, { useEffect } from "react";
 import { fetchCrawlJob, startCrawlJob } from "@/api/crawl_jobs";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "../ui/Spinner";
 import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
 
 export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
+    const queryClient = useQueryClient();
     const [userSettings] = useLocalStorage("user-settings", {
         startURL: "",
         googleMapsApiKey: "",
@@ -40,7 +40,6 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
             return status === "completed" || status === "failed" ? false : 5000;
         }
     })
-    const navigate = useNavigate()
 
     useEffect(() => {
         if (!job?.Status) return
@@ -51,9 +50,9 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
         if (isFinished || isFailed) {
             if (isFinished) {
                 toast.success("Crawl completed successfully!")
-                navigate({
-                    to: '.'
-                });
+                setIsOpen(false);
+
+                queryClient.invalidateQueries({ queryKey: ["restaurants"] });
             } else {
                 toast.error(job.ErrorMessage.String)
             }
@@ -62,16 +61,17 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
 
     }, [job?.Status, setActiveJobId, job?.ErrorMessage])
 
-    async function handleStartCrawl() {
-        try {
-            const job = await startCrawlJob(userSettings.startURL, userSettings.googleMapsApiKey);
-            setActiveJobId(job.crawl_job_id);
+    const { mutate: startCrawl } = useMutation({
+        mutationFn: () => startCrawlJob(userSettings.startURL, userSettings.googleMapsApiKey),
+        onSuccess: (data) => {
+            setActiveJobId(data.crawl_job_id);
             toast.success("Crawl job started successfully!");
-        } catch (error: any) {
+        },
+        onError: (error) => {
             toast.error("Failed to start crawl job.")
             console.error(error);
         }
-    }
+    })
 
     const isDisabled = !userSettings.startURL || !userSettings.googleMapsApiKey;
 
@@ -118,7 +118,7 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
                     <AlertDialogCancel>Close</AlertDialogCancel>
                     <Button
                         disabled={isDisabled || !!activeJobId}
-                        onClick={handleStartCrawl}
+                        onClick={() => startCrawl()}
                         className="flex gap-2"
                     >
                         {(activeJobId) && <Spinner />}
