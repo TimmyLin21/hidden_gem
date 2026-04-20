@@ -1,6 +1,6 @@
 
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/AlertDialog";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/AlertDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/Tooltip";
 import { Button } from "../ui/Button";
 import { Info } from "lucide-react";
@@ -9,14 +9,16 @@ import { fetchCrawlJob, startCrawlJob } from "@/api/crawl_jobs";
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "../ui/Spinner";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 
 export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
     const [userSettings] = useLocalStorage("user-settings", {
         startURL: "",
         googleMapsApiKey: "",
     })
+    const [isOpen, setIsOpen] = React.useState(false);
     const [activeJobId, setActiveJobId] = useLocalStorage<string | null>("active-crawl-job-id", null);
-    const { data: job, isLoading } = useQuery({
+    const { data: job } = useQuery({
         queryKey: ["crawlStatus", activeJobId],
         queryFn: () => {
             if (!activeJobId) {
@@ -38,6 +40,7 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
             return status === "completed" || status === "failed" ? false : 5000;
         }
     })
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (!job?.Status) return
@@ -48,6 +51,9 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
         if (isFinished || isFailed) {
             if (isFinished) {
                 toast.success("Crawl completed successfully!")
+                navigate({
+                    to: '.'
+                });
             } else {
                 toast.error(job.ErrorMessage.String)
             }
@@ -60,7 +66,7 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
         try {
             const job = await startCrawlJob(userSettings.startURL, userSettings.googleMapsApiKey);
             setActiveJobId(job.crawl_job_id);
-            toast.success(job.message);
+            toast.success("Crawl job started successfully!");
         } catch (error: any) {
             toast.error("Failed to start crawl job.")
             console.error(error);
@@ -70,7 +76,7 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
     const isDisabled = !userSettings.startURL || !userSettings.googleMapsApiKey;
 
     return (
-        <AlertDialog>
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
             <AlertDialogTrigger asChild>
                 {children}
             </AlertDialogTrigger>
@@ -109,15 +115,15 @@ export function CrawlAlertDialog({ children }: { children: React.ReactNode }) {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
+                    <AlertDialogCancel>Close</AlertDialogCancel>
+                    <Button
                         disabled={isDisabled || !!activeJobId}
                         onClick={handleStartCrawl}
                         className="flex gap-2"
                     >
-                        {(isLoading && activeJobId) && <Spinner />}
+                        {(activeJobId) && <Spinner />}
                         {activeJobId ? "Crawling..." : "Start Extraction"}
-                    </AlertDialogAction>
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

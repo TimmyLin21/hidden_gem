@@ -6,6 +6,7 @@ import { Input } from "../ui/Input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/Tooltip";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { toast } from "sonner";
+import React from "react";
 
 export function SettingDialog(
     {
@@ -18,6 +19,7 @@ export function SettingDialog(
         startURL: "",
         googleMapsApiKey: "",
     })
+    const [isOpen, setIsOpen] = React.useState(false);
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -32,14 +34,14 @@ export function SettingDialog(
             }
             setUserSettings({ startURL, googleMapsApiKey });
             toast.success("Settings saved successfully!")
-
+            setIsOpen(false);
         } catch (error) {
             toast.error("Failed to save settings.")
         }
     }
 
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
