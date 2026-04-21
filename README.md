@@ -3,7 +3,9 @@
 ## Description
 Hidden Gem is a web application that discovers off-the-beaten-path restaurants by crawling travel blogs using Go. It enriches data via the Google Places API and provides a React-based interface for filtering and visualizing results on an interactive map.
 
-[![hidden-gem-ezgif-com-optimize.gif](https://i.postimg.cc/0Q8ncZpV/hidden-gem-ezgif-com-optimize.gif)](https://postimg.cc/3yc2wXfG)
+https://github.com/user-attachments/assets/15a13cfa-a7cf-42f5-b167-d81f73c35f60
+
+
 
 ## Motivation
 
